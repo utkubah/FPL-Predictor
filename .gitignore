@@ -1,0 +1,21 @@
+# Ignore the tutorials folder that I kept for personal 
+tutorials/
+
+# Python byte‑code
+__pycache__/
+*.py[cod]
+
+# PyTorch model checkpoints
+*.pt
+*.pth
+checkpoints/
+
+# Lightning/TorchTrainer logs
+lightning_logs/
+
+# TensorBoard logs
+runs/
+logs/
+
+# Jupyter checkpoints (if you use notebooks)
+.ipynb_checkpoints/
