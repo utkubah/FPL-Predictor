@@ -99,10 +99,8 @@ def prepare_player_sequences(df_path: str,
     print(f"Selected {len(selected_feature_names)} features for sequences: {selected_feature_names[:5]}...") # Show a sample
 
     
-    # keep only necessary columns for sequencing + target
-    columns_to_keep_for_sequencing = list(set(selected_feature_names)) # Ensure uniqueness
-    
-    df_subset = df[columns_to_keep_for_sequencing].copy()
+    # keep only necessary columns for sequencing + target    
+    df_subset = df[selected_feature_names].copy()
 
 
     # filling NaN
@@ -155,13 +153,19 @@ def prepare_player_sequences(df_path: str,
             target_gw = t
             target_instance = player_data[player_data["GW"] == target_gw]
 
-            if target_instance.empty: # No data for the target gameweek, so can't form this sample
+            if target_instance.empty: # safety
                 continue
 
             current_target = target_instance[target_col].iloc[0]
             
-            # Initialize a sequence array (for features) and mask for this sample
-            # Shape: (max_gws_in_sequence, num_features) 
+ 
+             
+            # dropping the target col 
+            selected_feature_names = [
+            col for col in selected_feature_names
+            if col.strip() != target_col
+            ]
+
             sequence_features = np.zeros((max_gws_in_sequence, len(selected_feature_names)), dtype=np.float32)
 
 
@@ -170,13 +174,12 @@ def prepare_player_sequences(df_path: str,
 
             # Populate the sequence with data available up to gameweek `t`
             history_data_for_sample = player_data[player_data["GW"] <= t].copy()
-            #do not forget the get rif of target col before creating sequences
-            history_data_for_sample.drop(columns=[target_col], inplace=True)
-            
+            #do not forget the get rif of target col before creating sequences            
             for _, row in history_data_for_sample.iterrows():
                 gw_idx = int(row["GW"]) -1 # Convert GW number (1-38) to 0-indexed slot
                 if 0 <= gw_idx < max_gws_in_sequence:
                     sequence_features[gw_idx, :] = row[selected_feature_names].values.astype(np.float32)
+                    
                     attention_mask[gw_idx] = True # Mark this timestep as real data
                 
             all_sequences_list.append(sequence_features)

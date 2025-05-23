@@ -16,6 +16,8 @@ lightning_logs/
 # TensorBoard logs
 runs/
 logs/
-
+logs_FNN/
+logs_RNN/
+logs_Transformer/
 # Jupyter checkpoints (if you use notebooks)
 .ipynb_checkpoints/
