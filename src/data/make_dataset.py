@@ -59,7 +59,7 @@ def prepare_player_sequences(df_path: str,
                            "goals_scored", "ict_index", "influence", "minutes", "own_goals", "penalties_missed", 
                            "penalties_saved", "red_cards", "saves", "starts", "threat", "yellow_cards", 
                            "xP", "expected_assists", "expected_goal_involvements", "expected_goals", "expected_goals_conceded", 
-                           "value", "selected", "transfers_balance", "transfers_in", "transfers_out"]
+                           "value", "selected", "transfers_balance", "transfers_in", "transfers_out", "team_a_score", "team_h_score"]  
 
     #change this such that only in gw(k) they are dropped
 
@@ -85,12 +85,12 @@ def prepare_player_sequences(df_path: str,
 
     
     
-    
+    if target_col not in selected_feature_names:
+        selected_feature_names.append(target_col)
 
     if "player_id" in selected_feature_names:
         print(f"Note: '{"player_id"}' is in selected features. It will be part of the dense sequence.")
 
-        #think about it
 
 
     print(f"Column '{lagged_features}' are dropped for preventing data leakage.")
@@ -202,7 +202,6 @@ def prepare_player_sequences(df_path: str,
 
  
  
- # add standard scaler
  
 """ 
 # --- Main Execution ---
