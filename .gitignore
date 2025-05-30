@@ -19,5 +19,10 @@ logs/
 logs_FNN/
 logs_RNN/
 logs_Transformer/
+csv_logs_randomsearch/
+csv_logs_randomsearch_rnn
+csv_logs_final/
+logs_FinalRNN/
+logs_FinalTransformer/
 # Jupyter checkpoints (if you use notebooks)
 .ipynb_checkpoints/

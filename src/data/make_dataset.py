@@ -14,10 +14,14 @@ class FPLPlayerSequenceDataset(Dataset): # add pytorch
     """
     def __init__(self, sequences, targets, attention_masks):
         self.sequences = torch.tensor(sequences, dtype=torch.float32)
+        self.attention_masks = torch.tensor(attention_masks, dtype=torch.bool) 
+
         self.targets = torch.tensor(targets, dtype=torch.float32).unsqueeze(1)
 
+
+        # since negative points happen so rarely we just give 0 points to signify they didn't earn any points. 
+
         # Attention mask indicates which parts of the sequence are real data vs. padding
-        self.attention_masks = torch.tensor(attention_masks, dtype=torch.bool) # or float32 if model expects that
 
     def __len__(self):
         return len(self.sequences)
@@ -25,7 +29,7 @@ class FPLPlayerSequenceDataset(Dataset): # add pytorch
     def __getitem__(self, idx):
         return self.sequences[idx], self.attention_masks[idx], self.targets[idx]
     
-
+        
 
 
 
@@ -85,11 +89,6 @@ def prepare_player_sequences(df_path: str,
 
     
     
-    if target_col not in selected_feature_names:
-        selected_feature_names.append(target_col)
-
-    if "player_id" in selected_feature_names:
-        print(f"Note: '{"player_id"}' is in selected features. It will be part of the dense sequence.")
 
 
 
@@ -129,6 +128,9 @@ def prepare_player_sequences(df_path: str,
 
     grouped_by_player = df_subset.groupby("player_id")
 
+    # dropping the total_point columns 
+    to_drop = {"total_points", "log1p_total_points"}
+    selected_feature_names = [col for col in selected_feature_names if col.strip() not in to_drop]
 
     for player_id, player_data in grouped_by_player:
 
@@ -142,6 +144,7 @@ def prepare_player_sequences(df_path: str,
          
         
         max_player_gw = player_data["GW"].max()
+
 
 
         for t in range(1, int(max_player_gw)+1): 
@@ -159,12 +162,6 @@ def prepare_player_sequences(df_path: str,
             current_target = target_instance[target_col].iloc[0]
             
  
-             
-            # dropping the target col 
-            selected_feature_names = [
-            col for col in selected_feature_names
-            if col.strip() != target_col
-            ]
 
             sequence_features = np.zeros((max_gws_in_sequence, len(selected_feature_names)), dtype=np.float32)
 
@@ -202,38 +199,3 @@ def prepare_player_sequences(df_path: str,
 
  
  
- 
-""" 
-# --- Main Execution ---
-if __name__ == "__main__":
-
-    sequences, attention_masks, targets, feature_names = prepare_player_sequences(
-        df_path="C:/Users/asus/OneDrive/Desktop/projects/AI_project/data/processed_data.csv",
-        target_col="total_points",
-        max_gws_in_sequence=38
-    )
-
-    if sequences is not None:
-        print(f"\nNumber of features per timestep: {sequences.shape[2]}")
-        print(f"Feature names: {feature_names[:5]}...")
-
-        print("\n--- Creating PyTorch Dataset and DataLoader ---")
-        full_dataset = FPLPlayerSequenceDataset(sequences, targets, attention_masks)
-        full_dataloader = DataLoader(full_dataset, batch_size=32, shuffle=False)
-
-        print(f"PyTorch Dataset created with {len(full_dataset)} samples.")
-        try:
-            sample_seq, sample_mask, sample_target = next(iter(full_dataloader))
-            print(f"Sample batch - Sequences shape: {sample_seq.shape}")      # (batch_size, MAX_GAMEWEEKS, num_features)
-            print(f"Sample batch - Attention Mask shape: {sample_mask.shape}") # (batch_size, MAX_GAMEWEEKS)
-            print(f"Sample batch - Targets shape: {sample_target.shape}")       # (batch_size, 1)
-                
-            # Check a mask and corresponding sequence part
-            print(f"\nExample mask for first sample in batch:\n{sample_mask[0].numpy().astype(int)}")
-            print(f"Corresponding sum of features for first sample (should be 0 where mask is 0 if padding is 0):\n{sample_seq[0].sum(axis=1).numpy()}")
-
-        except StopIteration:
-            print("Could not retrieve a sample batch from DataLoader.")
-            
-        print("\n--- Data Preparation Script Finished ---")
-"""
