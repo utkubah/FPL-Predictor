@@ -13,7 +13,7 @@ checkpoints/
 # Lightning/TorchTrainer logs
 lightning_logs/
 
-# TensorBoard logs
+# logs
 runs/
 logs/
 logs_RNN/
@@ -23,5 +23,6 @@ csv_logs_randomsearch_rnn
 csv_logs_final/
 logs_FinalRNN/
 logs_FinalTransformer/
+saved_models_and_visualizations/
 # Jupyter checkpoints (if you use notebooks)
 .ipynb_checkpoints/
