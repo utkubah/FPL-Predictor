@@ -1,27 +1,18 @@
-
-# Best parameters from  hyperparameter search
-
 rnn_best_params:
-  lr: 0005
-  hidden_dim: 128
-  n_layers: 2
-  dropout: 0.4
-  weight_decay:  1e-4
+  lr: 5.0e-05
+  hidden_dim: 256
+  n_layers: 3
+  dropout: 0.5
+  weight_decay: 5.0e-05
   underprediction_penalty: 2.0
-
 transformer_best_params:
-  lr: 0001
+  lr: 0.0001
   d_model: 512
   nhead: 4
-  num_encoder_layers: 6
+  num_encoder_layers: 8
   dim_feedforward: 512
-  dropout: 0.4
-  weight_decay: 5e-5
-  warmup_epochs: 5
-  milestone_pattern: [3, 7]
+  dropout: 0.6
+  weight_decay: 1.0e-05
+  warmup_epochs: 7
   multistep_gamma: 0.2
   underprediction_penalty: 2
-
-
-
-  lr': 0.0001, 'd_model': 512, 'nhead': 4, 'num_encoder_layers': 6, 'dim_feedforward': 512, 'dropout': 0.4, 'weight_decay': 5e-05, 'warmup_epochs': 5, 'milestones_after_warmup': [3, 7], 'multistep_gamma': 0.2, 'underprediction_penalty': 1.5}

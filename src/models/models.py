@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -65,7 +64,6 @@ class RNN(pl.LightningModule):
         )
         self.fc = nn.Linear(hidden_dim, 1)
 
-        
         self.criterion = nn.SmoothL1Loss(beta=1.0)
 
         self.lr = lr
@@ -94,7 +92,6 @@ class RNN(pl.LightningModule):
         preds = self(x, mask)
 
         #for validation step we want to be accurate to original points which are integers so we round the prediction
-
         preds_rounded = torch.round(preds) 
 
 

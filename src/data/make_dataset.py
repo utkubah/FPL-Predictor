@@ -6,7 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 
 
 # --- PyTorch Dataset Class ---
-class FPLPlayerSequenceDataset(Dataset): # add pytorch
+class FPLPlayerSequenceDataset(Dataset): 
     """
     - sequence_of_features: A tensor of players and their features across gameweeks
     - target_points: A scalar tensor representing the points in the gameweek
@@ -15,13 +15,11 @@ class FPLPlayerSequenceDataset(Dataset): # add pytorch
     def __init__(self, sequences, targets, attention_masks):
         self.sequences = torch.tensor(sequences, dtype=torch.float32)
         self.attention_masks = torch.tensor(attention_masks, dtype=torch.bool) 
+        # Attention mask indicates which parts of the sequence are real data vs. padding
 
         self.targets = torch.tensor(targets, dtype=torch.float32).unsqueeze(1)
 
 
-        # since negative points happen so rarely we just give 0 points to signify they didn't earn any points. 
-
-        # Attention mask indicates which parts of the sequence are real data vs. padding
 
     def __len__(self):
         return len(self.sequences)
@@ -34,6 +32,10 @@ class FPLPlayerSequenceDataset(Dataset): # add pytorch
 
 
 # --- Core Data Processing and Sequencing Function ---
+
+# function gets the processed data and the target column and spits out
+# 3 variables: 3D tensor of sequences, an attention mask to prevent looking into "future" and the targets
+# we will end up with data that can be used in FPLPlayerSequenceDataset and moreover in Dataloader
 def prepare_player_sequences(df_path: str, 
                              target_col: str, 
                              max_gws_in_sequence: int):
@@ -41,7 +43,7 @@ def prepare_player_sequences(df_path: str,
 
     print(f"--- Starting Data Preparation for Sequences from {df_path} ---")
 
-    # 1. Load Data
+    # --- Load Data ---
     try:
         df = pd.read_csv(df_path)
         print(f"Successfully loaded data. Shape: {df.shape}")
@@ -49,7 +51,7 @@ def prepare_player_sequences(df_path: str,
         print(f"ERROR: Could not load data. {e}")
         return None, None, None
 
-    # 2. Data Cleaning and Initial Type Conversion
+    # --- Data Cleaning and Initial Type Conversion ---
 
     print("\n--- Cleaning Data and Selecting Numeric Features ---")
     
@@ -65,7 +67,6 @@ def prepare_player_sequences(df_path: str,
                            "xP", "expected_assists", "expected_goal_involvements", "expected_goals", "expected_goals_conceded", 
                            "value", "selected", "transfers_balance", "transfers_in", "transfers_out", "team_a_score", "team_h_score"]  
 
-    #change this such that only in gw(k) they are dropped
 
     for col in df.columns:
 
@@ -74,6 +75,7 @@ def prepare_player_sequences(df_path: str,
 
         # Attempt to convert columns to numeric, coercing errors to NaN
         # This helps identify columns that are non-numeric or mixed-type.
+
         try:
             df[col] = pd.to_numeric(df[col])
             if df[col].isnull().sum() > 0:  
@@ -119,7 +121,7 @@ def prepare_player_sequences(df_path: str,
 
 
 
-    # 3. Create Sequences
+    # --- Create Sequences ---
     print(f"\n--- Creating Fixed-Length Sequences (Max Gameweeks: {max_gws_in_sequence}) ---")
     all_sequences_list  = []
     all_targets_list  = []
@@ -141,6 +143,7 @@ def prepare_player_sequences(df_path: str,
         # SeqN: history up to GW(k), predict GW(k)
 
         #this could have caused a problem with data leakage however we took care of it
+        #also this nature of the data explain why later GWs are easier to predict
          
         
         max_player_gw = player_data["GW"].max()
@@ -197,5 +200,67 @@ def prepare_player_sequences(df_path: str,
         
     return sequences_np, masks_np, targets_np
 
- 
- 
+
+# after getting the sequences we can use this function to create dataloaders
+def dataloader_create(sequences, masks, targets, scaler, batch_size = 128):
+
+    # different from the model_selection version we use a fitted scaler
+    # train/val/test split
+    # we do it a chronological way 
+    n = sequences.shape[0]
+
+    train_end = int(n * 0.70)          
+    val_end   = train_end + int(n * 0.15)  
+
+    train_idx = np.arange(0, train_end)
+    val_idx   = np.arange(train_end, val_end)
+    test_idx  = np.arange(val_end, n)
+
+
+    sequences_train_scaled = scale_3d_sequences(sequences[train_idx], scaler)
+    sequences_val_scaled = scale_3d_sequences(sequences[val_idx], scaler)
+    sequences_test_scaled = scale_3d_sequences(sequences[test_idx], scaler)
+
+    masks_train = masks[train_idx]
+    targets_train = targets[train_idx]
+
+    masks_val = masks[val_idx]
+    targets_val = targets[val_idx]
+
+    masks_test = masks[test_idx]
+    targets_test = targets[test_idx]
+
+
+
+    train_ds = FPLPlayerSequenceDataset(sequences_train_scaled, targets_train, masks_train) 
+    val_ds = FPLPlayerSequenceDataset(sequences_val_scaled, targets_val, masks_val)     
+    test_ds = FPLPlayerSequenceDataset(sequences_test_scaled, targets_test, masks_test)     
+
+
+
+
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True) 
+    val_loader   = DataLoader(val_ds, batch_size=batch_size, shuffle=False)
+    test_loader  = DataLoader(test_ds, batch_size=batch_size, shuffle=False)
+
+
+    print(f"Train/Val/Test sizes: {len(train_ds)}/{len(val_ds)}/{len(test_ds)}")
+
+    return train_loader, val_loader, test_loader
+
+#scaling is an important step as our data and especially our transformer model benefits from it
+def scale_3d_sequences(sequence_array_3d, fitted_scaler):
+    if sequence_array_3d.shape[0] == 0: # Handle empty array
+        return sequence_array_3d 
+    
+    original_shape = sequence_array_3d.shape
+    num_features_in_array = original_shape[2]
+    
+    # Reshape to 2D
+    reshaped_array = sequence_array_3d.reshape(-1, num_features_in_array)
+    
+    # Transform using the FITTED scaler
+    scaled_reshaped_array = fitted_scaler.transform(reshaped_array)
+    
+    # Reshape back to original 3D shape
+    return scaled_reshaped_array.reshape(original_shape)

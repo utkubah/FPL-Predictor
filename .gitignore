@@ -16,7 +16,6 @@ lightning_logs/
 # TensorBoard logs
 runs/
 logs/
-logs_FNN/
 logs_RNN/
 logs_Transformer/
 csv_logs_randomsearch/
