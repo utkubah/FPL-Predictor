@@ -118,8 +118,6 @@ def main():
 
 
 
-
-
         # --- Callbacks and Logger ---
         csv_logger = CSVLogger(os.path.join(LOG_DIR, model_variant_name), name="training_logs")
 

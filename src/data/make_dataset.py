@@ -8,9 +8,12 @@ from torch.utils.data import Dataset, DataLoader
 # --- PyTorch Dataset Class ---
 class FPLPlayerSequenceDataset(Dataset): 
     """
-    - sequence_of_features: A tensor of players and their features across gameweeks
-    - target_points: A scalar tensor representing the points in the gameweek
-    - attention_masks: A scalar tensor representing which gameweek information is available at the time
+    Initialize the dataset with data, targets, and masks.
+
+        Args:
+            sequence_of_features: A tensor of players and their features across gameweeks
+            target_points: A scalar tensor representing the points in the gameweek
+            attention_masks: A scalar tensor representing which gameweek information is available at the time
     """
     def __init__(self, sequences, targets, attention_masks):
         self.sequences = torch.tensor(sequences, dtype=torch.float32)
@@ -33,12 +36,20 @@ class FPLPlayerSequenceDataset(Dataset):
 
 # --- Core Data Processing and Sequencing Function ---
 
-# function gets the processed data and the target column and spits out
-# 3 variables: 3D tensor of sequences, an attention mask to prevent looking into "future" and the targets
-# we will end up with data that can be used in FPLPlayerSequenceDataset and moreover in Dataloader
 def prepare_player_sequences(df_path: str, 
                              target_col: str, 
                              max_gws_in_sequence: int):
+    
+    """
+    A function gets the processed data and the target column and spits out 
+    3 variables: 3D tensor of sequences, an attention mask to prevent looking into "future" and the targets
+    we will end up with data that can be used in FPLPlayerSequenceDataset and moreover in Dataloader
+
+        Args: 
+            df_path: str, 
+            target_col: str, 
+            max_gws_in_sequence: int
+    """
 
 
     print(f"--- Starting Data Preparation for Sequences from {df_path} ---")
@@ -200,11 +211,20 @@ def prepare_player_sequences(df_path: str,
         
     return sequences_np, masks_np, targets_np
 
-
+# different from the model_selection version we use a fitted scaler
 # after getting the sequences we can use this function to create dataloaders
 def dataloader_create(sequences, masks, targets, scaler, batch_size = 128):
 
-    # different from the model_selection version we use a fitted scaler
+    """
+    A function to create dataloader 
+    
+    Args:
+        sequences: Tensor
+        masks: Tensor
+        targets: Tensor
+        scaler: MaxAbsScaler()
+        batch_size: int
+    """
     # train/val/test split
     # we do it a chronological way 
     n = sequences.shape[0]
@@ -250,6 +270,15 @@ def dataloader_create(sequences, masks, targets, scaler, batch_size = 128):
 
 #scaling is an important step as our data and especially our transformer model benefits from it
 def scale_3d_sequences(sequence_array_3d, fitted_scaler):
+
+    """
+    A function for scaling 3D sequences
+    
+    Args:
+        sequence_array_3d: Tensor
+        fitted_scaler: MaxAbsScaler()
+    
+    """
     if sequence_array_3d.shape[0] == 0: # Handle empty array
         return sequence_array_3d 
     

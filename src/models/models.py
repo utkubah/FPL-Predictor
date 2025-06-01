@@ -11,9 +11,11 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import SequentialLR, LinearLR, MultiStepLR
 
 
-# custom weighted loss function
 
 class WeightedSmoothL1Loss(nn.Module):
+    """
+    Custom SmoothL1Loss that applies a higher penalty for underpredictions.
+    """
     def __init__(self, beta=1.0, underprediction_penalty=2.0):
         super().__init__()
         self.beta = beta
@@ -32,6 +34,9 @@ class WeightedSmoothL1Loss(nn.Module):
 
 
 class PositionalEncoding(nn.Module):
+    """
+    Positional Encoding necessary for transformers to understand the order in gameweeks
+    """
     def __init__(self, d_model, dropout = 0.2, sequence_length = 38): 
         super().__init__()
         self.dropout = nn.Dropout(p=dropout)
@@ -52,6 +57,9 @@ class PositionalEncoding(nn.Module):
 
 
 class RNN(pl.LightningModule):
+    """
+    LSTM network with a linear classifier head
+    """
     def __init__(self, n_features, hidden_dim=128, n_layers=2, dropout=0.4, lr=1e-4, weight_decay = 1e-5, underprediction_penalty= None):
         super().__init__()
         self.save_hyperparameters()
@@ -153,6 +161,9 @@ class RNN(pl.LightningModule):
     
 
 class Transformer(pl.LightningModule):
+    """
+    Encoder-only Transformer network with a MLP classifier head
+    """
     def __init__(self,
                  input_features_dim,
                  d_model = 256,
@@ -328,6 +339,9 @@ class Transformer(pl.LightningModule):
 
 
 class LogRNN(RNN): # Inherits from RNN
+    """
+    RNN class with custom weighted loss and log transformed targets
+    """
     def __init__(self, n_features, hidden_dim=64, n_layers=3, dropout=0.4, lr=1e-4, weight_decay=1e-5,underprediction_penalty=1.0):
         super().__init__(n_features)
 
@@ -380,6 +394,9 @@ class LogRNN(RNN): # Inherits from RNN
 
 
 class LogTransformer(Transformer): # Inherits from your existing Transformer class
+    """
+    Transformer class with custom weighted loss and log transformed targets
+    """
     def __init__(self, input_features_dim, d_model=512, nhead=4, num_encoder_layers=3,
                  dim_feedforward=512, dropout=0.4, sequence_length=38, lr=5e-5,
                  weight_decay=5e-4, warmup_epochs=5, milestones_after_warmup=[3,7],

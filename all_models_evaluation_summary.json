@@ -1,0 +1,52 @@
+{
+    "RNN": {
+        "trainer_metrics": [
+            {
+                "test_loss": 0.3068181872367859,
+                "test_accuracy_exact": 0.7880333662033081,
+                "test_accuracy_tolerant_1pt": 0.926716148853302
+            }
+        ],
+        "checkpoint_used": "C:\\Users\\asus\\OneDrive\\Desktop\\projects\\AI_project\\saved_models_and_visualizations\\RNN\\RNN-best-epoch=29-val_loss=0.5605.ckpt",
+        "MAE_Salah": 4.166666666666667,
+        "MAE_ActivePlayers": 3.422648514851485
+    },
+    "Transformer": {
+        "trainer_metrics": [
+            {
+                "test_loss": 0.2668425440788269,
+                "test_accuracy_exact": 0.8028756976127625,
+                "test_accuracy_tolerant_1pt": 0.9383116960525513
+            }
+        ],
+        "checkpoint_used": "C:\\Users\\asus\\OneDrive\\Desktop\\projects\\AI_project\\saved_models_and_visualizations\\Transformer\\Transformer-best-epoch=13-val_loss=0.5809.ckpt",
+        "MAE_Salah": 4.083333333333333,
+        "MAE_ActivePlayers": 3.428836633663366
+    },
+    "LogRNN": {
+        "trainer_metrics": [
+            {
+                "test_loss_log_transformed": 0.13540810346603394,
+                "test_loss": 0.5669063329696655,
+                "test_accuracy_exact": 0.7697124481201172,
+                "test_accuracy_tolerant_1pt": 0.9111781120300293
+            }
+        ],
+        "checkpoint_used": "C:\\Users\\asus\\OneDrive\\Desktop\\projects\\AI_project\\saved_models_and_visualizations\\LogRNN\\LogRNN-best-epoch=26-val_loss=0.9748.ckpt",
+        "MAE_Salah": 4.055555555555555,
+        "MAE_ActivePlayers": 3.4399752475247523
+    },
+    "LogTransformer": {
+        "trainer_metrics": [
+            {
+                "test_loss_log_transformed": 0.08960697799921036,
+                "test_loss": 0.6548120379447937,
+                "test_accuracy_exact": 0.7736549377441406,
+                "test_accuracy_tolerant_1pt": 0.9165120720863342
+            }
+        ],
+        "checkpoint_used": "C:\\Users\\asus\\OneDrive\\Desktop\\projects\\AI_project\\saved_models_and_visualizations\\LogTransformer\\LogTransformer-best-epoch=17-val_loss=1.2371.ckpt",
+        "MAE_Salah": 4.333333333333333,
+        "MAE_ActivePlayers": 3.579826732673267
+    }
+}

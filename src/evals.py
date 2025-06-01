@@ -250,7 +250,7 @@ def main_evaluate():
 
 
     # --- Save all evaluation results (including trainer metrics) to a single file ---
-    overall_eval_summary_path = os.path.join(SAVE_DIR, "all_models_evaluation_summary.json")
+    overall_eval_summary_path = "all_models_evaluation_summary.json"
     with open(overall_eval_summary_path, 'w') as f:
         json.dump(all_evaluation_results, f, indent=4)
     print(f"\n\n--- Overall Evaluation Summary (trainer.test metrics) saved to: {overall_eval_summary_path} ---")
